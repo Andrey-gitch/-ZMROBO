@@ -1,0 +1,322 @@
+import rcu
+
+VAR_Color_To_Place = 0
+VAR_Number_To_Place = 0
+
+def Recognise_Kartochka():
+  global VAR_Color_To_Place,VAR_Number_To_Place
+  rcu.SetWaitForAICamData(2,0)
+  while not(((rcu.GetAICamData(1) == 1) or ((rcu.GetAICamData(4) == 1) or (rcu.GetAICamData(3) == 1)))):
+    pass
+  rcu.SetWaitForAICamData(12,0)
+  rcu.SetWaitForTime(5)
+  if (rcu.GetAICamData(1) == 1):
+    rcu.SetDisplayString(12,"five",0xFFE0,0x0000)
+    VAR_Number_To_Place = 5
+  else:
+    if (rcu.GetAICamData(1) == 2):
+      rcu.SetDisplayString(12,"four",0xFFE0,0x0000)
+      VAR_Number_To_Place = 4
+    else:
+      if (rcu.GetAICamData(1) == 3):
+        rcu.SetDisplayString(12,"three",0xFFE0,0x0000)
+        VAR_Number_To_Place = 3
+      else:
+        if (rcu.GetAICamData(1) == 4):
+          rcu.SetDisplayString(12,"two",0xFFE0,0x0000)
+          VAR_Number_To_Place = 2
+        else:
+          rcu.SetDisplayString(12,"one",0xFFE0,0x0000)
+          VAR_Number_To_Place = 1
+  rcu.SetWaitForAICamData(2,0)
+  rcu.SetWaitForTime(2)
+  if (rcu.GetAICamData(1) > (rcu.GetAICamData(4) > rcu.GetAICamData(3))):
+    rcu.SetLCDClear(0xF800)
+    rcu.SetDisplayVarXY(20,20,VAR_Number_To_Place,0xFFFF,0xF800)
+    VAR_Color_To_Place = 1
+  else:
+    if (rcu.GetAICamData(3) > (rcu.GetAICamData(1) > rcu.GetAICamData(4))):
+      rcu.SetLCDClear(0x001F)
+      rcu.SetDisplayVarXY(20,20,VAR_Number_To_Place,0xFFFF,0x001F)
+      VAR_Color_To_Place = 2
+    else:
+      if (rcu.GetAICamData(4) > (rcu.GetAICamData(3) > rcu.GetAICamData(1))):
+        rcu.SetLCDClear(0xFFE0)
+        rcu.SetDisplayVarXY(20,20,VAR_Number_To_Place,0xFFFF,0xFFE0)
+        VAR_Color_To_Place = 3
+      else:
+        rcu.SetLCDClear(0xFFE0)
+        rcu.SetDisplayVarXY(20,20,VAR_Number_To_Place,0xFFFF,0xFFE0)
+        VAR_Color_To_Place = 3
+
+def Grab_From_Board():
+  global VAR_Color_To_Place,VAR_Number_To_Place
+  rcu.SetMagneticServoDegreeSpeed(3,225,5)
+  rcu.SetMagneticServoDegreeSpeed(4,135,5)
+  rcu.SetWaitForTime(3)
+  rcu.SetServo(3,100)
+  rcu.SetMagneticServoDegreeSpeed(3,250,5)
+  rcu.SetMagneticServoDegreeSpeed(4,110,5)
+  rcu.SetWaitForTime(1)
+  rcu.SetServo(3,135)
+  rcu.SetWaitForTime(1)
+  Up(20)
+
+def Place_On_Board():
+  global VAR_Color_To_Place,VAR_Number_To_Place
+  rcu.SetMagneticServoDegreeSpeed(3,225,5)
+  rcu.SetMagneticServoDegreeSpeed(4,135,5)
+  rcu.SetWaitForTime(3)
+  rcu.SetMagneticServoDegreeSpeed(3,250,5)
+  rcu.SetMagneticServoDegreeSpeed(4,110,5)
+  rcu.SetWaitForTime(1)
+  rcu.SetWaitForTime(1)
+  rcu.SetServo(3,100)
+  rcu.SetWaitForTime(1)
+  Up(20)
+  rcu.SetServo(3,135)
+  rcu.SetWaitForTime(1)
+
+def Turn(Degree,Dir):
+  global VAR_Color_To_Place,VAR_Number_To_Place
+  rcu.SetMotorCode(1)
+  if (Dir > 0):
+    while not((rcu.GetMotorCode(1) > Degree)):
+      rcu.SetMotor(1,(50 * Dir))
+      rcu.SetMotor(3,(-50 * Dir))
+  else:
+    while not(((0 - Degree) > rcu.GetMotorCode(1))):
+      rcu.SetMotor(1,(50 * Dir))
+      rcu.SetMotor(3,(-50 * Dir))
+  rcu.SetMotor(1,0)
+  rcu.SetMotor(3,0)
+
+def Line_P7(Trashold):
+  global VAR_Color_To_Place,VAR_Number_To_Place
+  if (rcu.GetLightSensor(7) > Trashold):
+    rcu.SetMotor(1,-20)
+    rcu.SetMotor(3,-50)
+  else:
+    rcu.SetMotor(1,-50)
+    rcu.SetMotor(3,-20)
+
+def Up(speed):
+  global VAR_Color_To_Place,VAR_Number_To_Place
+  rcu.SetMagneticServoDegreeSpeed(3,180,speed)
+  rcu.SetMagneticServoDegreeSpeed(4,180,speed)
+  rcu.SetWaitForTime(1)
+
+def Cignal():
+  global VAR_Color_To_Place,VAR_Number_To_Place
+  rcu.SetLCDClear(0x0000)
+  rcu.SetWaitForTime(0.5)
+  rcu.SetLCDClear(0xF800)
+  rcu.SetWaitForTime(0.5)
+  rcu.SetLCDClear(0x0000)
+  rcu.SetWaitForTime(0.5)
+  rcu.SetLCDClear(0xFFE0)
+  rcu.SetWaitForTime(0.5)
+  rcu.SetLCDClear(0x0000)
+  rcu.SetWaitForTime(0.5)
+
+def Line_P5(znach):
+  global VAR_Color_To_Place,VAR_Number_To_Place
+  if (rcu.GetLightSensor(5) < znach):
+    rcu.SetMotor(1,-30)
+    rcu.SetMotor(3,-20)
+  else:
+    rcu.SetMotor(1,-20)
+    rcu.SetMotor(3,-40)
+
+def Move_Chains(Degree,Speed):
+  global VAR_Color_To_Place,VAR_Number_To_Place
+  rcu.SetMotor(4,Speed)
+  if (Speed > 0):
+    while not((rcu.GetMotorCode(4) > Degree)):
+      pass
+  else:
+    while not((Degree > rcu.GetMotorCode(4))):
+      pass
+  rcu.SetMotor(4,0)
+
+def Place_Obj():
+  global VAR_Color_To_Place,VAR_Number_To_Place
+  Up(30)
+  rcu.SetMagneticServoDegreeSpeed(3,135,5)
+  rcu.SetMagneticServoDegreeSpeed(4,225,5)
+  rcu.SetWaitForTime(1)
+  rcu.SetMagneticServoDegreeSpeed(3,90,5)
+  rcu.SetMagneticServoDegreeSpeed(4,270,5)
+  rcu.SetWaitForTime(3)
+  rcu.SetServo(3,80)
+  rcu.SetWaitForTime(1)
+  Up(5)
+  rcu.SetServo(3,135)
+  rcu.SetWaitForTime(1)
+
+def Go_Gyro(Degree):
+  global VAR_Color_To_Place,VAR_Number_To_Place
+  if (rcu.GetLightSensor(7) > Degree):
+    rcu.SetMotor(1,-45)
+    rcu.SetMotor(3,-60)
+  else:
+    rcu.SetMotor(1,-60)
+    rcu.SetMotor(3,-50)
+
+def Grab():
+  global VAR_Color_To_Place,VAR_Number_To_Place
+  Up(30)
+  rcu.SetMagneticServoDegreeSpeed(3,135,30)
+  rcu.SetMagneticServoDegreeSpeed(4,225,30)
+  rcu.SetWaitForTime(1)
+  rcu.SetServo(3,80)
+  rcu.SetMagneticServoDegreeSpeed(3,90,30)
+  rcu.SetMagneticServoDegreeSpeed(4,270,30)
+  rcu.SetWaitForTime(1)
+  rcu.SetServo(3,135)
+  rcu.SetWaitForTime(1)
+  Up(5)
+
+def task1():
+  global VAR_Color_To_Place,VAR_Number_To_Place
+  VAR_Color_To_Place = 0
+  VAR_Number_To_Place = 0
+  Recognise_Kartochka()
+  rcu.SetFontSize(4)
+  Turn(2500,1)
+  rcu.SetMotor(1,-40)
+  rcu.SetMotor(3,-80)
+  rcu.SetWaitForTime(0.7)
+  rcu.SetMotor(1,0)
+  rcu.SetMotor(3,0)
+  rcu.SetMotorCode(1)
+  rcu.SetWaitForTime(1)
+  Turn(100,1)
+  while not((rcu.GetColorSensor(2,4) == 2)):
+    Go_Gyro(250)
+  rcu.SetMotor(1,-40)
+  rcu.SetMotor(3,-50)
+  rcu.SetWaitForTime(0.71)
+  rcu.SetMotor(1,0)
+  rcu.SetMotor(3,0)
+  rcu.SetMotorCode(1)
+  Turn(3100,1)
+  rcu.SetWaitForTime(0.1)
+  while not((rcu.GetLightSensor(5) < 1000)):
+    rcu.SetMotorCode(1)
+    Turn(100,1)
+  rcu.SetMotor(1,0)
+  rcu.SetMotor(3,0)
+  rcu.SetMotor(1,-50)
+  rcu.SetMotor(3,-50)
+  rcu.SetWaitForTime(0.4)
+  rcu.SetMotor(1,0)
+  rcu.SetMotor(3,0)
+  Grab()
+  Place_On_Board()
+  rcu.SetMotorCode(1)
+  while not((rcu.GetMotorCode(1) < -1800)):
+    Line_P5(1100)
+  rcu.SetMotor(1,0)
+  rcu.SetMotor(3,0)
+  Turn(120,1)
+  Grab()
+  Move_Chains(-8200,-70)
+  Place_On_Board()
+  rcu.SetMotor(1,-50)
+  rcu.SetMotor(3,-50)
+  rcu.SetWaitForTime(0.44)
+  rcu.SetMotor(1,0)
+  rcu.SetMotor(3,0)
+  Grab()
+  rcu.SetMotorCode(4)
+  Move_Chains(-8400,-70)
+  Place_On_Board()
+  rcu.SetMotorCode(4)
+  Move_Chains(16300,70)
+  rcu.SetMotorCode(1)
+  while not((rcu.GetMotorCode(1) < -2150)):
+    Line_P5(1100)
+  rcu.SetMotor(1,0)
+  rcu.SetMotor(3,0)
+  Turn(120,1)
+  while not((200 > rcu.GetLightSensor(7))):
+    rcu.SetMotor(1,-30)
+    rcu.SetMotor(3,-30)
+  rcu.SetMotor(1,0)
+  rcu.SetMotor(3,0)
+  Grab()
+  rcu.SetMotorCode(1)
+  Turn(1200,1)
+  rcu.SetMotor(1,-30)
+  rcu.SetMotor(3,-30)
+  rcu.SetWaitForTime(1.3)
+  rcu.SetMotor(1,0)
+  rcu.SetMotor(3,0)
+  rcu.SetMotorCode(4)
+  Move_Chains(-16900,-70)
+  Place_Obj()
+  rcu.SetMotorCode(4)
+  Move_Chains(16900,70)
+  Grab()
+  rcu.SetMotorCode(4)
+  rcu.SetMotor(1,-30)
+  rcu.SetMotor(3,-30)
+  rcu.SetWaitForTime(1.2)
+  rcu.SetMotor(1,0)
+  rcu.SetMotor(3,0)
+  rcu.SetLCDClear(0xFFFF)
+  rcu.SetMp3Play(1, 3)
+  rcu.SetWaitForTime(2.5)
+  rcu.SetDisplayVar(1,5,0xFFE0,0x0000)
+  rcu.SetMotorCode(1)
+  while not((-5600 > rcu.GetMotorCode(1))):
+    Line_P7(150)
+  rcu.SetMotor(1,0)
+  rcu.SetMotor(3,0)
+  rcu.SetDisplayVar(1,4,0xFFE0,0x0000)
+  Place_Obj()
+  rcu.SetMotorCode(4)
+  rcu.SetDisplayVar(1,3,0xFFE0,0x0000)
+  Grab_From_Board()
+  Move_Chains(-16600,-70)
+  Place_Obj()
+  rcu.SetMotorCode(1)
+  while not((-3300 > rcu.GetMotorCode(1))):
+    Line_P7(150)
+  rcu.SetMotor(1,0)
+  rcu.SetMotor(3,0)
+  rcu.SetDisplayVar(1,2,0xFFE0,0x0000)
+  rcu.SetMotorCode(4)
+  Move_Chains(7500,70)
+  Grab_From_Board()
+  Place_Obj()
+  rcu.SetWaitForTime(1)
+  Cignal()
+  rcu.SetWaitForTime(1)
+  rcu.SetMotor(1,-40)
+  rcu.SetMotor(3,-50)
+  rcu.SetDisplayVar(1,1,0xFFE0,0x0000)
+  rcu.SetWaitForTime(0.5)
+  rcu.SetMotor(1,0)
+  rcu.SetMotor(3,0)
+  rcu.SetMotorCode(4)
+  Move_Chains(-7500,-70)
+  Grab_From_Board()
+  Place_Obj()
+  rcu.SetLCDClear(0xFFFF)
+  rcu.SetMotor(1,-40)
+  rcu.SetMotor(3,-50)
+  rcu.SetWaitForTime(2.3)
+  rcu.SetMotor(1,0)
+  rcu.SetMotor(3,0)
+  rcu.SetLCDClear(0x07E0)
+  rcu.SetMotorCode(1)
+  Turn(3200,-1)
+  rcu.SetMotor(1,-40)
+  rcu.SetMotor(3,-50)
+  rcu.SetWaitForTime(2.45)
+  rcu.SetMotor(1,0)
+  rcu.SetMotor(3,0)
+
+task1()
